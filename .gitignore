@@ -2,6 +2,10 @@
 /dist
 /node_modules
 
+#linters
+.eslintrc.js
+.prettierrc
+
 # Logs
 logs
 *.log
