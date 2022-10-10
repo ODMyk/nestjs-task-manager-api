@@ -12,4 +12,11 @@ export class AuthService {
   async signup(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     return this.userRepository.signup(authCredentialsDto);
   }
+
+  async signin(authCredentialsDto: AuthCredentialsDto) {
+    const username = await this.userRepository.validateUserPassword(
+      authCredentialsDto,
+    );
+    console.log(username);
+  }
 }
