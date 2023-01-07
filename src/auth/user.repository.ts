@@ -1,14 +1,19 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { DataSource, EntityRepository, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import {
   ConflictException,
+  Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
-@EntityRepository(User)
+@Injectable()
 export class UserRepository extends Repository<User> {
+  constructor(private dataSource: DataSource) {
+    super(User, dataSource.createEntityManager());
+  }
+
   async signup(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     const { username, password } = authCredentialsDto;
     const user = new User();
@@ -34,7 +39,7 @@ export class UserRepository extends Repository<User> {
 
   async validateUserPassword(authCredentialsDto: AuthCredentialsDto) {
     const { username, password } = authCredentialsDto;
-    const user = await this.findOne({ username });
+    const user = await this.findOne({ where: { username } });
 
     if (user && (await user.validatePassword(password))) {
       return user.username;
