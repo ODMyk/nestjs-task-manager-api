@@ -12,7 +12,9 @@ export class AuthController {
   signup(
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
   ): Promise<void> {
-    this.logger.verbose(`User with username "${authCredentialsDto.username}" signs up"`);
+    this.logger.verbose(
+      `User with username "${authCredentialsDto.username}" signs up"`,
+    );
     return this.authService.signup(authCredentialsDto);
   }
 
@@ -20,7 +22,9 @@ export class AuthController {
   signin(
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
   ): Promise<{ accessToken: string }> {
-    this.logger.verbose(`User with username "${authCredentialsDto.username}" signs in"`);
+    this.logger.verbose(
+      `User with username "${authCredentialsDto.username}" signs in"`,
+    );
     return this.authService.signin(authCredentialsDto);
   }
 }
