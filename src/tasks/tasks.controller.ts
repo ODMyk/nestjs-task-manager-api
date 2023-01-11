@@ -7,7 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query, Req,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -36,8 +36,11 @@ export class TasksController {
   }
 
   @Get('/:id')
-  getTaskById(@Param('id', ParseIntPipe) id: number): Promise<Task> {
-    return this.tasksService.getTaskByID(id);
+  getTaskById(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ): Promise<Task> {
+    return this.tasksService.getTaskByID(id, user);
   }
 
   @Post()
@@ -50,15 +53,19 @@ export class TasksController {
   }
 
   @Delete('/:id')
-  deleteTaskById(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.tasksService.deleteTask(id);
+  deleteTaskById(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.tasksService.deleteTask(id, user);
   }
 
   @Patch('/:id/status')
   updateTaskStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body('status', TaskStatusValidationPipe) status: TaskStatus,
+    @GetUser() user: User,
   ): Promise<Task> {
-    return this.tasksService.updateTaskStatus(id, status);
+    return this.tasksService.updateTaskStatus(id, user, status);
   }
 }
