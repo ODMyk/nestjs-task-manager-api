@@ -32,9 +32,9 @@ export class TaskRepository extends Repository<Task> {
       return task;
     } catch (error) {
       this.logger.error(
-        `Failed to create new task for user with username ${
+        `Failed to create new task for user with username "${
           user.username
-        } . DTO: ${JSON.stringify(createTaskDto)}`,
+        }". DTO: ${JSON.stringify(createTaskDto)}`,
         error.trace,
       );
       throw new InternalServerErrorException();
@@ -65,9 +65,9 @@ export class TaskRepository extends Repository<Task> {
       return await query.getMany();
     } catch (error) {
       this.logger.error(
-        `Failed to retrieve tasks for user with username ${
+        `Failed to retrieve tasks for user with username "${
           user.username
-        } . Filters: ${JSON.stringify(filterDto)}`,
+        }". Filters: ${JSON.stringify(filterDto)}`,
         error.trace,
       );
       throw new InternalServerErrorException();
