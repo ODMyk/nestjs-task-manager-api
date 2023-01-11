@@ -4,12 +4,14 @@ import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import {
   ConflictException,
   Injectable,
-  InternalServerErrorException,
+  InternalServerErrorException, Logger,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
+  private readonly logger = new Logger('UserRepository');
+
   constructor(private dataSource: DataSource) {
     super(User, dataSource.createEntityManager());
   }
@@ -28,6 +30,7 @@ export class UserRepository extends Repository<User> {
       if (e.code === '23505') {
         throw new ConflictException('User already exists');
       } else {
+        this.logger.error(`Failed to create new user with username "${user.username}"`, e.trace);
         throw new InternalServerErrorException();
       }
     }
