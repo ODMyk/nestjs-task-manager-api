@@ -11,10 +11,11 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
-  private readonly logger = new Logger('UserRepository');
+  private readonly logger: Logger;
 
   constructor(private dataSource: DataSource) {
     super(User, dataSource.createEntityManager());
+    this.logger = new Logger(UserRepository.name);
   }
 
   async signup(authCredentialsDto: AuthCredentialsDto): Promise<void> {

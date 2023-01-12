@@ -11,17 +11,17 @@ import {
   Query,
   UseGuards,
   UsePipes,
-  ValidationPipe
-} from "@nestjs/common";
-import { TasksService } from "./tasks.service";
-import { CreateTaskDto } from "./dto/create-task.dto";
-import { GetTaskFilterDto } from "./dto/get-task-filter.dto";
-import { TaskStatusValidationPipe } from "./pipes/task-status-validation.pipe";
-import { Task } from "./task.entity";
-import { TaskStatus } from "./task-status.enum";
-import { AuthGuard } from "@nestjs/passport";
-import { GetUser } from "../auth/get-user.decorator";
-import { User } from "../auth/user.entity";
+  ValidationPipe,
+} from '@nestjs/common';
+import { TasksService } from './tasks.service';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { GetTaskFilterDto } from './dto/get-task-filter.dto';
+import { TaskStatusValidationPipe } from './pipes/task-status-validation.pipe';
+import { Task } from './task.entity';
+import { TaskStatus } from './task-status.enum';
+import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from '../auth/get-user.decorator';
+import { User } from '../auth/user.entity';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -30,18 +30,20 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
-  ApiUnauthorizedResponse
-} from "@nestjs/swagger";
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 @ApiBearerAuth()
-@ApiUnauthorizedResponse({description: 'Unauthorized'})
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @ApiTags('Tasks')
 @Controller('tasks')
 @UseGuards(AuthGuard())
 export class TasksController {
-  private readonly logger = new Logger('TasksController');
+  private readonly logger: Logger;
 
-  constructor(private tasksService: TasksService) {}
+  constructor(private tasksService: TasksService) {
+    this.logger = new Logger(TasksController.name);
+  }
 
   @ApiOkResponse({
     description:
@@ -62,12 +64,12 @@ export class TasksController {
   }
 
   @ApiOkResponse({
-    description:
-      'Returns a task with given id',
+    description: 'Returns a task with given id',
     type: Task,
   })
   @ApiNotFoundResponse({
-    description: 'Happens when user tries to get not his task or non-existing task'
+    description:
+      'Happens when user tries to get not his task or non-existing task',
   })
   @Get('/:id')
   getTaskById(
@@ -80,7 +82,7 @@ export class TasksController {
     return this.tasksService.getTaskByID(id, user);
   }
 
-  @ApiCreatedResponse({description: 'Returns created task', type: Task})
+  @ApiCreatedResponse({ description: 'Returns created task', type: Task })
   @Post()
   @UsePipes(ValidationPipe)
   createTask(
@@ -96,12 +98,12 @@ export class TasksController {
   }
 
   @ApiOkResponse({
-    description:
-      'Deletes task with given id',
+    description: 'Deletes task with given id',
     type: Task,
   })
   @ApiNotFoundResponse({
-    description: 'Happens when user tries to delete not his task or non-existing task'
+    description:
+      'Happens when user tries to delete not his task or non-existing task',
   })
   @Delete('/:id')
   deleteTaskById(
@@ -114,17 +116,20 @@ export class TasksController {
     return this.tasksService.deleteTask(id, user);
   }
 
-  @ApiBody({ description: 'Status to install for given task', enum: [TaskStatus.DONE, TaskStatus.IN_PROGRESS, TaskStatus.OPEN] })
+  @ApiBody({
+    description: 'Status to install for given task',
+    enum: Object.values(TaskStatus),
+  })
   @ApiOkResponse({
-    description:
-      'Updates task status with given id',
+    description: 'Updates task status with given id',
     type: Task,
   })
   @ApiNotFoundResponse({
-    description: 'Happens when user tries to update not his task or non-existing task'
+    description:
+      'Happens when user tries to update not his task or non-existing task',
   })
   @ApiBadRequestResponse({
-    description: 'Happens when invalid status used'
+    description: 'Happens when invalid status used',
   })
   @Patch('/:id/status')
   updateTaskStatus(

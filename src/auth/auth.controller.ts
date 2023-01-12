@@ -6,19 +6,23 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiTags,
-  ApiUnauthorizedResponse
-} from "@nestjs/swagger";
-import { SuccessfulLogin } from "./successful-login.model";
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { SuccessfulLogin } from './successful-login.model';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  private readonly logger = new Logger('AuthController');
+  private readonly logger: Logger;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) {
+    this.logger = new Logger(AuthController.name);
+  }
 
-  @ApiCreatedResponse({description: 'Creates new user and returns nothing'})
-  @ApiConflictResponse({description: 'Happens, when username is already taken'})
+  @ApiCreatedResponse({ description: 'Creates new user and returns nothing' })
+  @ApiConflictResponse({
+    description: 'Happens, when username is already taken',
+  })
   @Post('/signup')
   signup(
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
@@ -29,8 +33,10 @@ export class AuthController {
     return this.authService.signup(authCredentialsDto);
   }
 
-  @ApiOkResponse({description: 'Returns access token', type: SuccessfulLogin})
-  @ApiUnauthorizedResponse({description: 'Happens when auth credentials are incorrect'})
+  @ApiOkResponse({ description: 'Returns access token', type: SuccessfulLogin })
+  @ApiUnauthorizedResponse({
+    description: 'Happens when auth credentials are incorrect',
+  })
   @Post('/signin')
   signin(
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
