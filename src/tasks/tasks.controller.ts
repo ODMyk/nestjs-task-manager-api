@@ -22,14 +22,34 @@ import { TaskStatus } from './task-status.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from '../auth/user.entity';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
+@ApiTags('Tasks')
 @Controller('tasks')
 @UseGuards(AuthGuard())
 export class TasksController {
-  private readonly logger = new Logger('TasksController');
+  private readonly logger: Logger;
 
-  constructor(private tasksService: TasksService) {}
+  constructor(private tasksService: TasksService) {
+    this.logger = new Logger(TasksController.name);
+  }
 
+  @ApiOkResponse({
+    description:
+      'Returns array of tasks, that have current user as owner and satisfy search filters',
+    type: [Task],
+  })
   @Get()
   getTasks(
     @Query(ValidationPipe) filterDto: GetTaskFilterDto,
@@ -43,6 +63,14 @@ export class TasksController {
     return this.tasksService.getTasks(filterDto, user);
   }
 
+  @ApiOkResponse({
+    description: 'Returns a task with given id',
+    type: Task,
+  })
+  @ApiNotFoundResponse({
+    description:
+      'Happens when user tries to get not his task or non-existing task',
+  })
   @Get('/:id')
   getTaskById(
     @Param('id', ParseIntPipe) id: number,
@@ -54,6 +82,7 @@ export class TasksController {
     return this.tasksService.getTaskByID(id, user);
   }
 
+  @ApiCreatedResponse({ description: 'Returns created task', type: Task })
   @Post()
   @UsePipes(ValidationPipe)
   createTask(
@@ -68,6 +97,14 @@ export class TasksController {
     return this.tasksService.createTask(createTaskDto, user);
   }
 
+  @ApiOkResponse({
+    description: 'Deletes task with given id',
+    type: Task,
+  })
+  @ApiNotFoundResponse({
+    description:
+      'Happens when user tries to delete not his task or non-existing task',
+  })
   @Delete('/:id')
   deleteTaskById(
     @Param('id', ParseIntPipe) id: number,
@@ -79,6 +116,21 @@ export class TasksController {
     return this.tasksService.deleteTask(id, user);
   }
 
+  @ApiBody({
+    description: 'Status to install for given task',
+    enum: Object.values(TaskStatus),
+  })
+  @ApiOkResponse({
+    description: 'Updates task status with given id',
+    type: Task,
+  })
+  @ApiNotFoundResponse({
+    description:
+      'Happens when user tries to update not his task or non-existing task',
+  })
+  @ApiBadRequestResponse({
+    description: 'Happens when invalid status used',
+  })
   @Patch('/:id/status')
   updateTaskStatus(
     @Param('id', ParseIntPipe) id: number,

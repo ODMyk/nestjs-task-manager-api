@@ -11,10 +11,11 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
-  private readonly logger = new Logger('UserRepository');
+  private readonly logger: Logger;
 
   constructor(private dataSource: DataSource) {
     super(User, dataSource.createEntityManager());
+    this.logger = new Logger(UserRepository.name);
   }
 
   async signup(authCredentialsDto: AuthCredentialsDto): Promise<void> {
@@ -28,13 +29,13 @@ export class UserRepository extends Repository<User> {
     try {
       await user.save();
     } catch (e) {
+      this.logger.error(
+        `Failed to create new user with username "${user.username}"`,
+        e.trace,
+      );
       if (e.code === '23505') {
         throw new ConflictException('User already exists');
       } else {
-        this.logger.error(
-          `Failed to create new user with username "${user.username}"`,
-          e.trace,
-        );
         throw new InternalServerErrorException();
       }
     }

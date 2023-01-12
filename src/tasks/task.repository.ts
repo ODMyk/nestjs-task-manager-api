@@ -12,19 +12,18 @@ import { User } from '../auth/user.entity';
 
 @Injectable()
 export class TaskRepository extends Repository<Task> {
-  private readonly logger = new Logger('TasksRepository');
+  private readonly logger: Logger;
 
   constructor(private dataSource: DataSource) {
     super(Task, dataSource.createEntityManager());
+    this.logger = new Logger(TaskRepository.name);
   }
 
   async createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
-    const { title, description } = createTaskDto;
-    const task = new Task();
-    task.title = title;
-    task.description = description;
-    task.status = TaskStatus.OPEN;
-    task.user = user;
+    const task = Object.assign(new Task(), createTaskDto, {
+      userId: user.id,
+      status: TaskStatus.OPEN,
+    });
 
     try {
       await task.save();
