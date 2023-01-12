@@ -28,13 +28,13 @@ export class UserRepository extends Repository<User> {
     try {
       await user.save();
     } catch (e) {
+      this.logger.error(
+        `Failed to create new user with username "${user.username}"`,
+        e.trace,
+      );
       if (e.code === '23505') {
         throw new ConflictException('User already exists');
       } else {
-        this.logger.error(
-          `Failed to create new user with username "${user.username}"`,
-          e.trace,
-        );
         throw new InternalServerErrorException();
       }
     }
