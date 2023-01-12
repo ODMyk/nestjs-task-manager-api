@@ -5,10 +5,10 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 export class GetTaskFilterDto {
   @ApiPropertyOptional({
     description: 'The status of the task',
-    enum: ['OPEN', 'IN_PROGRESS', 'DONE'],
+    enum: Object.values(TaskStatus),
   })
   @IsOptional()
-  @IsIn([TaskStatus.OPEN, TaskStatus.IN_PROGRESS, TaskStatus.DONE])
+  @IsIn(Object.values(TaskStatus))
   status: TaskStatus;
 
   @ApiPropertyOptional({

@@ -17,11 +17,11 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTaskFilterDto } from './dto/get-task-filter.dto';
 import { TaskStatusValidationPipe } from './pipes/task-status-validation.pipe';
-import { Task } from './task.entity';
+import { TaskEntity } from './task.entity';
 import { TaskStatus } from './task-status.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
-import { User } from '../auth/user.entity';
+import { UserEntity } from '../auth/user.entity';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -32,6 +32,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { TaskDto } from './dto/task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
@@ -47,14 +49,14 @@ export class TasksController {
 
   @ApiOkResponse({
     description:
-      'Returns array of tasks, that have current user as owner and satisfy search filters',
-    type: [Task],
+      "Returns array of task DTO's, that have current user as owner and satisfy search filters",
+    type: [TaskDto],
   })
   @Get()
   getTasks(
-    @Query(ValidationPipe) filterDto: GetTaskFilterDto,
-    @GetUser() user: User,
-  ): Promise<Task[]> {
+    @Query() filterDto: GetTaskFilterDto,
+    @GetUser() user: UserEntity,
+  ): Promise<TaskDto[]> {
     this.logger.verbose(
       `User with username "${
         user.username
@@ -65,7 +67,7 @@ export class TasksController {
 
   @ApiOkResponse({
     description: 'Returns a task with given id',
-    type: Task,
+    type: TaskDto,
   })
   @ApiNotFoundResponse({
     description:
@@ -74,32 +76,33 @@ export class TasksController {
   @Get('/:id')
   getTaskById(
     @Param('id', ParseIntPipe) id: number,
-    @GetUser() user: User,
-  ): Promise<Task> {
+    @GetUser() user: UserEntity,
+  ): Promise<TaskDto> {
     this.logger.verbose(
-      `User with username "${user.username}" retrievese task with id ${id}`,
+      `User with username "${user.username}" tries to retrieve task with id ${id}`,
     );
     return this.tasksService.getTaskByID(id, user);
   }
 
-  @ApiCreatedResponse({ description: 'Returns created task', type: Task })
+  @ApiCreatedResponse({
+    description: 'Returns created task DTO',
+    type: TaskDto,
+  })
   @Post()
-  @UsePipes(ValidationPipe)
   createTask(
     @Body() createTaskDto: CreateTaskDto,
-    @GetUser() user: User,
-  ): Promise<Task> {
+    @GetUser() user: UserEntity,
+  ): Promise<TaskDto> {
     this.logger.verbose(
       `User with username "${
         user.username
-      }" creates new task. DTO: ${JSON.stringify(createTaskDto)}`,
+      }" tries to create new task. DTO: ${JSON.stringify(createTaskDto)}`,
     );
     return this.tasksService.createTask(createTaskDto, user);
   }
 
   @ApiOkResponse({
     description: 'Deletes task with given id',
-    type: Task,
   })
   @ApiNotFoundResponse({
     description:
@@ -108,21 +111,20 @@ export class TasksController {
   @Delete('/:id')
   deleteTaskById(
     @Param('id', ParseIntPipe) id: number,
-    @GetUser() user: User,
+    @GetUser() user: UserEntity,
   ): Promise<void> {
     this.logger.verbose(
-      `User with username "${user.username}" deletes task with id ${id}`,
+      `User with username "${user.username}" tries to delete task with id ${id}`,
     );
     return this.tasksService.deleteTask(id, user);
   }
 
   @ApiBody({
-    description: 'Status to install for given task',
-    enum: Object.values(TaskStatus),
+    type: UpdateTaskDto,
   })
   @ApiOkResponse({
-    description: 'Updates task status with given id',
-    type: Task,
+    description: 'Updates task with given id and returns new task DTO',
+    type: TaskDto,
   })
   @ApiNotFoundResponse({
     description:
@@ -131,15 +133,19 @@ export class TasksController {
   @ApiBadRequestResponse({
     description: 'Happens when invalid status used',
   })
-  @Patch('/:id/status')
-  updateTaskStatus(
+  @Patch('/:id')
+  updateTask(
     @Param('id', ParseIntPipe) id: number,
-    @Body('status', TaskStatusValidationPipe) status: TaskStatus,
-    @GetUser() user: User,
-  ): Promise<Task> {
+    @Body() updateTaskDto: UpdateTaskDto,
+    @GetUser() user: UserEntity,
+  ): Promise<TaskDto> {
     this.logger.verbose(
-      `User with username "${user.username}" updates task's(id: ${id}) status to ${status}`,
+      `User with username "${
+        user.username
+      }" tries to update task with id: ${id}. UpdateTaskDto: ${JSON.stringify(
+        updateTaskDto,
+      )}`,
     );
-    return this.tasksService.updateTaskStatus(id, user, status);
+    return this.tasksService.updateTask(id, user, updateTaskDto);
   }
 }
