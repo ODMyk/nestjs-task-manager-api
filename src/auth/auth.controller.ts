@@ -28,7 +28,7 @@ export class AuthController {
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
   ): Promise<void> {
     this.logger.verbose(
-      `User with username "${authCredentialsDto.username}" signs up"`,
+      `User with username "${authCredentialsDto.username}" tries to sign up"`,
     );
     return this.authService.signup(authCredentialsDto);
   }
@@ -42,7 +42,7 @@ export class AuthController {
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
   ): Promise<SuccessfulLogin> {
     this.logger.verbose(
-      `User with username "${authCredentialsDto.username}" signs in"`,
+      `User with username "${authCredentialsDto.username}" tries to sign in"`,
     );
     return this.authService.signin(authCredentialsDto);
   }

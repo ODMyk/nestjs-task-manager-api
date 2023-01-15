@@ -6,31 +6,25 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { TaskStatus } from './task-status.enum';
-import { User } from '../auth/user.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { UserEntity } from '../auth/user.entity';
 
 @Entity()
-export class Task extends BaseEntity {
-  @ApiProperty()
+export class TaskEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty()
   @Column()
   title: string;
 
-  @ApiProperty()
   @Column()
   description: string;
 
-  @ApiProperty({ enum: Object.values(TaskStatus) })
-  @Column()
+  @Column({ default: TaskStatus.OPEN })
   status: TaskStatus;
 
-  @ManyToOne((type) => User, (user) => user.tasks, { eager: false })
-  user: User;
+  @ManyToOne((type) => UserEntity, (user) => user.tasks, { eager: false })
+  user: UserEntity;
 
-  @ApiProperty()
   @Column()
   userId: number;
 }

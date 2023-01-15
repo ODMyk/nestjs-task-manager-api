@@ -1,5 +1,5 @@
-import { DataSource, EntityRepository, Repository } from 'typeorm';
-import { User } from './user.entity';
+import { DataSource, Repository } from 'typeorm';
+import { UserEntity } from './user.entity';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import {
   ConflictException,
@@ -10,17 +10,17 @@ import {
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class UserRepository extends Repository<User> {
+export class UserRepository extends Repository<UserEntity> {
   private readonly logger: Logger;
 
   constructor(private dataSource: DataSource) {
-    super(User, dataSource.createEntityManager());
+    super(UserEntity, dataSource.createEntityManager());
     this.logger = new Logger(UserRepository.name);
   }
 
   async signup(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     const { username, password } = authCredentialsDto;
-    const user = new User();
+    const user = new UserEntity();
 
     user.username = username;
     user.salt = await bcrypt.genSalt();
@@ -34,7 +34,7 @@ export class UserRepository extends Repository<User> {
         e.trace,
       );
       if (e.code === '23505') {
-        throw new ConflictException('User already exists');
+        throw new ConflictException('UserEntity already exists');
       } else {
         throw new InternalServerErrorException();
       }
