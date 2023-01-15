@@ -6,10 +6,12 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserEntity } from '../auth/user.entity';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskMapper } from './task-mapper';
+import { TaskDto } from './dto/task.dto';
 
 @Injectable()
 export class TaskRepository extends Repository<TaskEntity> {
@@ -20,22 +22,30 @@ export class TaskRepository extends Repository<TaskEntity> {
     this.logger = new Logger(TaskRepository.name);
   }
 
-  async getTaskById(taskId: number, userId: number): Promise<TaskEntity> {
-    return this.findOne({
+  async getTaskEntityById(taskId: number, userId: number): Promise<TaskEntity> {
+    const found = this.findOne({
       where: { id: taskId, userId },
     });
+
+    if (!found) {
+      this.logger.verbose(`Task not found`);
+      throw new NotFoundException(`Task with id "${taskId}" does not exist`);
+    }
+
+    this.logger.verbose(`Task found successfully`);
+    return found;
   }
 
   async createTask(
     createTaskDto: CreateTaskDto,
     user: UserEntity,
-  ): Promise<TaskEntity> {
+  ): Promise<TaskDto> {
     const task = TaskMapper.toCreateEntity(user, createTaskDto);
 
     try {
       await task.save();
       this.logger.verbose('Task created successfully');
-      return task;
+      return TaskMapper.toDto(task);
     } catch (error) {
       this.logger.error(
         `Failed to create new task for user with username "${
@@ -50,7 +60,7 @@ export class TaskRepository extends Repository<TaskEntity> {
   async getTasks(
     filterDto: GetTaskFilterDto,
     user: UserEntity,
-  ): Promise<TaskEntity[]> {
+  ): Promise<TaskDto[]> {
     const query = this.dataSource
       .getRepository(TaskEntity)
       .createQueryBuilder('task');
@@ -71,7 +81,8 @@ export class TaskRepository extends Repository<TaskEntity> {
     }
 
     try {
-      return await query.getMany();
+      const entities = await query.getMany();
+      return entities.map((entity: TaskEntity) => TaskMapper.toDto(entity));
     } catch (error) {
       this.logger.error(
         `Failed to retrieve tasks for user with username "${
@@ -86,13 +97,13 @@ export class TaskRepository extends Repository<TaskEntity> {
   async updateTask(
     taskEntity: TaskEntity,
     updateTaskDto: UpdateTaskDto,
-  ): Promise<TaskEntity> {
+  ): Promise<TaskDto> {
     const newEntity = TaskMapper.toUpdateEntity(taskEntity, updateTaskDto);
 
     try {
       await newEntity.save();
-      this.logger.verbose('Task updated successfully')
-      return newEntity;
+      this.logger.verbose('Task updated successfully');
+      return TaskMapper.toDto(newEntity);
     } catch (error) {
       this.logger.error(
         `Failed to update task with id: ${

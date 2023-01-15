@@ -19,7 +19,7 @@ export class TaskEntity extends BaseEntity {
   @Column()
   description: string;
 
-  @Column()
+  @Column({ default: TaskStatus.OPEN })
   status: TaskStatus;
 
   @ManyToOne((type) => UserEntity, (user) => user.tasks, { eager: false })

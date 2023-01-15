@@ -24,24 +24,11 @@ export class TasksService {
     filterDto: GetTaskFilterDto,
     user: UserEntity,
   ): Promise<TaskDto[]> {
-    return this.taskRepository
-      .getTasks(filterDto, user)
-      .then((entitiesList: TaskEntity[]) =>
-        entitiesList.map((entity: TaskEntity) => TaskMapper.toDto(entity)),
-      );
+    return this.taskRepository.getTasks(filterDto, user);
   }
 
   async getTaskByID(id: number, user: UserEntity): Promise<TaskDto> {
-    const found = await this.taskRepository.getTaskById(id, user.id);
-
-    if (!found) {
-      this.logger.verbose(
-        `Task not found`,
-      );
-      throw new NotFoundException(`Task with id "${id}" does not exist`);
-    }
-
-    this.logger.verbose(`Task found successfully`);
+    const found = await this.taskRepository.getTaskEntityById(id, user.id);
     return TaskMapper.toDto(found);
   }
 
@@ -70,15 +57,7 @@ export class TasksService {
     user: UserEntity,
     updateTaskDto: UpdateTaskDto,
   ): Promise<TaskDto> {
-    const found = await this.taskRepository.getTaskById(taskId, user.id);
-
-    if (!found) {
-      this.logger.verbose('Task not found');
-      throw new NotFoundException(`Task with id "${taskId}" does not exist`);
-    }
-
-    return this.taskRepository
-      .updateTask(found, updateTaskDto)
-      .then((entity: TaskEntity) => TaskMapper.toDto(entity));
+    const found = await this.taskRepository.getTaskEntityById(taskId, user.id);
+    return this.taskRepository.updateTask(found, updateTaskDto);
   }
 }
